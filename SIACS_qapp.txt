@@ -1,0 +1,1010 @@
+Revised Date: December 08, 2021 Page 1 of 29
+U.S. Environmental Protection Agency
+Office of Air and Radiation
+Office of Radiation and Indoor Air
+Indoor Environments Division
+Development of EPA’s Simplified Indoor Air
+Chemistry Simulator (SIACS) Model
+Version 1.0
+Technical Project Lead: Vito Ilacqua, ORIA/IED
+Prepared by: Daniel Malashock, ORIA/IED
+______________________________________________________________________
+APPROVALS
+Prepared by:
+Daniel Malashock ___________________________________________________
+Signature Date
+Technical Lead:
+Vito Ilacqua ___________________________________________________
+Signature Date
+Center Director:
+Laura Kolb ___________________________________________________
+Signature Date
+IED QA Coordinator (Alternate):
+Alisa Smith ___________________________________________________
+Signature Date
+ORIA QA Manager:
+Jennifer Mosser ___________________________________________________
+Signature DateDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+Revised Date: December 08, 2021 Page 2 of 29
+Table of Contents
+A. PROJECT MANAGEMENT ............................................................................................................ 3
+A1. Distribution List..................................................................................................................... 3
+A2. Project/Task Organization .................................................................................................... 3
+A3. Problem Definition/Background ........................................................................................... 5
+A4. Project/Task Description....................................................................................................... 5
+A5. Special Training/Certification................................................................................................ 7
+A6. Documents and Records ....................................................................................................... 8
+A7. Quality Objectives and Criteria for Model Inputs/Outputs .................................................. 9
+B. MODEL DEVELOPMENT............................................................................................................ 13
+B1. Model Description............................................................................................................... 13
+B2. Model Parameters & Theoretical Approach ....................................................................... 14
+B3. Non-direct Measurements (Input Data Requirements)...................................................... 16
+B4. Model Coding and Verification .......................................................................................... 17
+B5. Sensitivity and Uncertainty Analysis ................................................................................... 19
+B6. Model Calibration................................................................................................................ 19
+B7. Model Verification (Model Comparison) ............................................................................ 21
+B8. Model Evaluation & Validation ........................................................................................... 21
+B9. Data Management .............................................................................................................. 23
+C. ASSESSMENTS AND OVERSIGHT ............................................................................................... 23
+C1. Assessments and Response Actions.................................................................................... 23
+C2. Reports to Management ..................................................................................................... 24
+D. MODEL VALIDATION AND USABILITY ....................................................................................... 24
+D1. Model testing strategy........................................................................................................ 24
+D2. Procedure for checking the correctness of outputs ........................................................... 25
+D3. Quality assurance of code development. ........................................................................... 25
+D4. Conformance to requirements ........................................................................................... 26
+E. REFERENCES .............................................................................................................................. 26
+F. LIST OF SECTIONS NOT APPLICABLE TO THIS QAPP.................................................................. 27Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 3 of 29
+A. PROJECT MANAGEMENT
+A1. Distribution List
+\Copies of this plan and all revisions will be sent to the following individuals:
+Table 1. Distribution list and contact information
+NAME ORGANIZATION CONTACT INFORMATION
+Vito
+Ilacqua EPA/OAR/ORIA/IED/CSA Ilacqua.Vito@epa.gov
+Jordan
+Zambrana EPA/OAR/ORIA/IED/CSA Zambrana.Jordan@epa.gov
+Serena
+Chung EPA/ORD/OSAPE/ERPD/ERB Chung.Serana@epa.gov
+Nicole
+Scharko EPA/OAR/ORIA/IED/CSA Scharko.Nicole@epa.gov
+Daniel
+Malashock EPA/OAR/ORIA/IED/CSA Malashock.Daniel@epa.gov
+Jennifer
+Mosser EPA/OAR/ORIA/IO Mosser.Jennifer@epa.gov
+Laura Kolb EPA/OAR/ORIA/IED/CSA Kolb.Laura@epa.gov
+Alisa
+Smith EPA/OAR/ORIA/IED Smith.Alisa@epa.gov
+A2. Project/Task Organization
+The work described herein is being conducted by U.S. EPA staff in the Office of Radiation and
+Indoor Air (ORIA), Indoor Environments Division (IED). This Quality Assurance Project Plan
+(QAPP) was prepared in accordance with EPA Guidance for Quality Assurance Project Plans
+for Modeling EPA QA/G-5M and describes the process for developing a simple model for
+characterizing indoor air chemistry. Specifically, the QAPP summarizes various publicly
+available data sources which serve as inputs to this model, quality criteria and considerations for
+input and output data, and processes for validation and verification of the model and its output.
+The organizational chart for the SIACS model development is presented in Figure 1 and a
+description of project personnel’s roles and responsibilities are detailed in Table 2.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 4 of 29
+Figure 1. Project organization chart
+Table 2. Roles and Responsibilities for SIACS Modeling Effort
+Project
+Personnel Role Responsibility
+Vito Ilacqua Principal Investigator
+& Technical Lead
+Set overall project direction; manage assign project
+outputs (software products and publications);
+communicate project details to external parties;
+develop source code; manage software deployment;
+mentor students and research fellows
+Serena
+Chung
+ORD Scientist &
+Model Developer Develop source code; manage software deployment
+Jordan
+Zambrana IED Scientist Design, develop, test, document and deploy software.
+Nicole
+Scharko
+IED Scientist; (AAAS
+Fellow) Design, develop, test, document and deploy software.
+Daniel
+Malashock
+IED Scientist; QA
+Lead
+Design, develop, test, document and deploy software.
+Prepares QAPP and revises as necessary.
+EPA
+Contractor(s)
+SRC or others as
+needed
+Consultation on source code development and
+deployment
+Alisa Smith
+IED Quality
+Assurance
+Coordinator (Acting)
+Reviews and approves QAPP, performs audits, as
+appropriate, prepares audit reports, tracks resulting
+corrective actions, reviews and approves scientific and
+technical products cleared by the technical lead
+Oversight & Management
+LEGEND
+Oversight
+Coordination
+Project Team
+ORIA Management Quality Assurance
+IED Management
+Staff Scientists & Model Developers
+Contract
+Support
+IED Quality Assurance Manager
+Task Lead / Technical Lead
+ORIA Quality Assurance ManagerDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 5 of 29
+Project
+Personnel Role Responsibility
+Jennifer
+Mosser
+ORIA Quality
+Assurance Manager
+Reviews and provides final approval of QAPP,
+performs audits, as appropriate, prepares audit reports,
+and tracks resulting corrective actions,
+A3. Problem Definition/Background
+As people in developed countries spend nearly 90% of their time indoors (EPA, 1989.), exposure
+to air pollutants largely occurs in the indoor environment. Building characteristics (e.g., air
+exchange rates, building materials), consumer products (carpets, furniture, cleaning products,
+paints, houseplants, personal care items), indoor activities (cooking, cleaning, smoking), along
+with both indoor and ambient air characteristics, all affect indoor air chemistry and thus air
+pollutant exposure. Understanding how the interaction of these and other critical factors
+ultimately impact indoor air pollutant concentrations is important. For this reason, a number of
+indoor air pollutant measurement experiments and models are being developed. In some cases,
+these are focused on specific, narrow parameters or time scales while others, require extensive
+technical data for inputs along with expertise for interpretation of results.
+The Indoor Environments Division at the U.S. Environmental Protection Agency looks to meet
+the need for a simple-to-run model as a first screening tool with the Simplified Indoor Air
+Chemistry Simulator (SIACS). SIACS is a reduced-form model designed to be open source and
+runs on R statistical software. The model, based on the SAPRC-99 condensed mechanism
+(Carter 2000), will use about 78 chemical species (some of which are grouped in classes of
+species with similar reactivity) and 211 photochemical reactions. The model is intended to be a
+first step in examining conditions that can affect indoor air chemistry and may be used for
+hypothesis generation and identifying the need for more complex and computationally intensive
+analyses with other proprietary models.
+The first generation SIACS model will be focused on researchers and public health practitioners;
+however, the intent is to ultimately provide a publicly available, open-source model for
+developing guidelines and recommendations for indoor air quality. Such recommendations could
+include, occupant behaviors, consumer products, building materials, or adapting building design
+and use – such as the risks and benefits of achieving higher energy efficiency through controlling
+infiltration and exfiltration. Additionally, indoor air quality practitioners may use the model as a
+tool to explore plausible scenarios that account for unexplained indoor sources.
+A4. Project/Task Description
+SIACS is a reduced-form model designed to be open source. The current beta version and final
+open-source model will be operated on R statistical software. The project will also develop a
+graphic user interface (GUI) for the model to be operated via web application. Accompanying
+the model will be user guides, technical documentation, and other guidance materials. TheDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 6 of 29
+project will also create a publicly accessible database for input parameters gathered from the
+literature.
+An iterative software development process will be used to develop the SIACS model and
+accompanying web application. This approach is centered around engagement and feedback
+from end users at defined increments of progress. These engagements may contribute to
+refinement of the model based on user-defined needs and/or user-contributed information that
+may potentially improve modeling approaches. Additionally, these engagements may also
+identify additional secondary data sources that may be considered for inclusion in the SIACS
+database. Identified data sources will be evaluated against data quality objectives (See section
+A7. Quality Objectives for Secondary Data.)
+These deployment and feedback approaches are paired with a project management approach that
+allows for requirements and solutions to evolve over the course of the project and as a result of
+the collective efforts of the team. The project is organized into three phases as follows, which are
+each discussed in greater detail throughout this QAPP:
+• Phase 1 – Modeling Needs and Requirements Analysis
+o Identify customer and modeling needs (completed)
+o Identify project-specific requirements (completed)
+o Complete a QAPP
+• Phase 2 – Model & Database Development
+o Model Design
+▪ Theoretical development (completed)
+▪ Mathematical formulation (completed)
+▪ Identification of needed input data and parameter values
+o Model Coding
+▪ Development of data management and software configuration
+▪ Model programming
+➢ Base code & packages
+➢ Refinement of model
+➢ Development of additional model components as needed and resources allow
+(e.g., to account for secondary organic aerosol (SOA) formation and light)
+➢ Examples for end-users
+➢ Monte carlo simulation capability
+▪ Model optimization & performance
+o Model Testing
+▪ Evaluate Uncertainty impact of measurement uncertainty
+▪ Determine if Model Meets Performance Criteria
+➢ Assess the capability of the SIACS model to capture variability in time-resolved
+concentrations of indoor air speciesDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 7 of 29
+➢ Compare and contrast model results to published literature on indoor air
+chemistry.
+➢ Summarize findings on what covariates played important roles across the sites,
+response variables, and modeling methods
+▪ Calibrate the model
+o Database Development
+▪ Gather input parameters from the literature
+▪ Collect new and existing data from stakeholders and partners
+o Stakeholder Engagement
+▪ Engagement and feedback from end users via webinars, conference presentations, and
+consultations.
+o Peer Review
+• Phase 3 – Model Application & Distribution
+o Develop EPA website for SIACS
+o Configure a graphic user interface (GUI)
+o Develop guidance and messaging for various audiences
+o Publish SIACS model and associated content on EPA website
+o Establish a SIACS Community of Practice (tentative milestone)
+A timeline of key project milestones according to the three project phases can be found in Table
+3. Some project activities and their milestones occur concurrently. Additionally, some milestones
+may be subject to change as a result of unforeseen changes in personnel, funding, and
+management priorities.
+Table 3. Project Timeline & Key Milestones by Project Phase
+Phase 1: Modeling Needs and Requirements Analysis
+Determine customer and modeling needs; and project-specific requirements Q4 2019
+QAPP Development Q4 2020
+QAPP Review & Finalization Q4 2021
+Phase 2 – Model Development
+Model Design, Coding, & Optimization Q3 2021
+Model Testing Q3 2021
+Database Development Q4 2022
+Stakeholder Engagement (ongoing)
+Peer Review Q1 2022
+Phase 3 – Model Application
+Develop EPA Website for SIACS Q3 2022
+Configure a user interface Q2 2022
+Develop guidance and messaging Q2 2022
+Publish SIACS model on EPA website Q4 2022
+A5. Special Training/CertificationDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 8 of 29
+No special training requirements or certification are needed to complete this project. General
+experience with common statistical analyses and familiarity with R programming language are
+desirable.
+A6. Documents and Records
+Upon approval, this QAPP will be distributed to individuals listed in Section A1. The QAPP will
+be maintained and accessible to project personnel on a shared project folder (see Section B10).
+During the project, any revision to this QAPP will be circulated to everyone on the current
+distribution list. The Technical Lead is responsible for ensuring all team members are distributed
+the current QAPP, including additional staff on their teams that enter the project between
+revisions.
+Project records will be managed in accordance with EPA’s National Records Management
+Program (NRMP). Records will be stored on the project share drive folder found at
+F:\ORIA\IED\SIACS and the project SharePoint folder, and email records will be saved
+according to EPA’s capstone requirements and EZ email tool as appropriate. The SIACS model,
+related files, and previous versions will be maintained on the project share drive (F:). Project
+records, including analyses, user guides, related documentation, presentations, etc., will be stored
+on the SharePoint folder, and will be organized according to the following system, and updated
+as needed:
+Figure 2. Example of Folder OrganizationDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 9 of 29
+Electronic and paper records, including email correspondence, will be managed according to
+EPA’s NRMP1. The following is a list of documentation to be referenced and records to be
+generated as a result of this process:
+• Statements of work for contractor consultations regarding the SAICS model and performance
+• Quality Assurance documentation submitted by contractors for modelling and application
+activities.
+• Electronic records of secondary data collected from the EPA Office of Research and
+Development and other published and publicly available data.
+• Compiled SIACS input data files. These files are the primary data source (input files) for the
+SIACS model.
+• SIACS project files that capture model output, and Excel files summarizing the modeling
+results in these output files.
+• Manuscript detailing the methods and results of the project.
+• User guide for SIACS model.
+• Presentations, briefings and conference materials.
+A7. Quality Objectives and Criteria for Model Inputs/Outputs
+A7.1 Overview
+The project will use secondary (non-direct) data and will follow requirements outlined in EPA’s
+Quality Assurance Project Plan Requirements for Secondary Data Research Projects (EPA,
+1999), and EPA guidance for assessing the quality and credibility of collected data (EPA 2002;
+EPA 2003). Assessments of the quality and relevance of literature and data will follow the
+criteria for Data Quality Assessment (DQA) of Data from Literature outlined in Section A7.2.
+This criteria includes the soundness, applicability and utility, clarity and completeness,
+uncertainty and variability, comparability, and evaluation and review of the data being used. In
+conducting assessments of the quality and relevance of data, Data Quality Indicators (DQI)
+outlined in section A7.3 Data Quality Indicators for Data will be utilized. In applying these
+criteria, a graded approach will be used, ensuring that the degree to which quality requirements
+are applied is appropriate for the intended use and influence of the data.
+Types of Reviewed Data
+This project will collect secondary data on measured or modeled concentrations of indoor air
+pollutant species in outdoor and indoor air, atmospheric conditions and measurement conditions,
+and results of comparable existing modeling efforts. Secondary data collected for this project
+may be obtained from many sources, including literature and published research projects,
+1 EPA’s National Records Management System: https://intranet.epa.gov/records/tools/index.htmlDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 10 of 29
+compilations from computerized databases and information systems, and computerized or
+mathematical models of environmental processes. These data are crucial for the development of
+the SIACS model and for its validation and verification. Secondary data collected for this project
+will be obtained primarily from peer-reviewed scientific literature. Peer-reviewed scientific
+literature generally reflects high levels of review and evaluation and where detailed methodology
+and supporting information is often available. The peer-review process places duties on the
+authors to ensure that the data are represented accurately. Also, the process places duties on the
+referees to examine a study’s methodology and the precision of presented data. On that premise,
+these publications will be viewed generally as possessing the most reliable information,
+particularly if most of the criteria for Data Quality Assessment (DQA) of Data from Literature
+outlined in Section A7.2 are met. As available, publicly available datasets associated with peerreviewed literature will be collected. The quality of these datasets will be scrutinized according
+to Data Quality Indicators discussed in section A7.3. Lastly, this project will use secondary data
+produced by EPA derived from EPA’s Community Multi-Scale Air Quality (CMAQ) Model.
+Quality assurance documentation for this secondary data can be found in EPA Quality Assurance
+Project Plan for the Development of Air Quality Simulation Models: Model Development
+Activities for Tropospheric Ozone, Particulate Matter, and Hazardous Air Pollutants (D-CED-
+000001-QP-1-0).
+A graded approach will be used in this assessment, wherein the level of quality assurance applied
+to the information is commensurate with the intended use of the information, the degree of
+confidence necessary in that information, and the importance of the information to the project.
+Documentation of assessment activities will be maintained using the Documentation of Quality
+Control Form shown in Appendix A, Table A1. This form contains the data qualtiy assessments
+(outlined in A7.2) and the data quality indicators (outlined in A7.3), both of which will be used
+for quality assurance purposes.
+A7.2 Data Quality Assessment (DQAs) of Data from Literature
+The principal criteria for evaluating literature will be their pedigree—i.e., whether the data
+appear in a reliable form, such as in a peer-reviewed publication – and relevance to the task at
+hand. The assessment will also consider how far removed the data are from the original source
+(i.e., is it a primary source or a secondary source drawing data from the primary source).
+Literature will be evaluated using the five assessment factors described by EPA’s Science and
+Technology Policy Council in A Summary of General Assessment Factors for Evaluating the
+Quality of Scientific and Technical Information (EPA 2003). Reviewers will use this criterion
+when evaluating literature identified for possible inclusion. The decision tree presented in Figure
+3 incorporates the quality assessment factors presented in Table 4 and will be used in the data
+and literature evaluation.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 11 of 29
+Table 4. Assessment Factors and Assessment Criteria for Data from Literature
+Assessment
+Factor Summary Assessment Criteria for this Project
+Applicability
+and Utility
+The publication provides relevant information for the task at hand. Types of
+questions considered in this assessment factor will be the following: Does
+the publication present information, such as mathematical relationships of
+indoor conditions and air pollutant species, applicable to those needed for this
+project? Specifically, are the measurements or mathematical relationships
+reflective of a residential environment?
+Soundness
+The publication and any conclusions reported rely on sound scientific
+theory and approaches, and the conclusions are consistent with the data
+presented. Types of questions considered in this assessment factor will be
+the following: Are the methodology used for data measurement appropriate?
+How do the results compare with existing scientific theory, principles, and
+practices?
+Clarity and
+Completeness
+Sufficient documentation is provided with the information/data being
+considered to assess underlying data, key assumptions, procedures, and
+model parameters, as applicable, as well as information identifying any
+potential conflicts of interest about sponsorship and author affiliations.
+Types of questions considered in this assessment factor will be the
+following: Are presented mathematical relationships supported by established
+theory, principles and/or practice. Are simulated data and derived parameters
+supported by clear and reproduceable methodology?
+Uncertainty and
+Variability
+Sufficient documentation is provided with the information/data being
+considered to assess uncertainties, variability, sources of error and/or bias,
+and properly reflects them in any conclusions drawn.
+Evaluation and
+Review
+The information/data has been independently technically reviewed, peer
+reviewed, or cited and/or used by a project that has been so reviewed or has
+documentation of independent verification or validation of the data study
+method and results reported.
+Comparability Can the data be compared across datasets? Are the results presented in a
+manner that is consistent with the objectives of the study?Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 12 of 29
+Figure 3. Process for Literature Evaluation
+Is it
+applicable
+Yes, applicable
+Is it peerreviewed?
+Yes, peer-reviewed
+Is it sound?
+Is it clear and complete?
+Uncertainty and variability are
+characterized?
+Yes to all three
+Considered and
+citable
+No, for one or
+more
+Citable with
+explanation
+No, not peer reviewed
+Does it address topics
+not found in the peer
+reviewed literature?
+Does it provide useful
+background information?
+Is it independently
+technically reviewed?
+Yes, for one or more
+Is it sound?
+Is it clear and
+complete?
+Does it document
+uncertainty and
+variability?
+Yes to all three
+Considered and
+citable
+No, for one or
+more
+Citable with
+explanation
+No for all
+three
+Not citable
+No, not applicable
+Not consideredDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 13 of 29
+A.7.3 Data Quality Indicators (DQIs) for Information/Data
+The DQI will assist in determining whether the data are suitable for the intended use in this
+analysis. That is, is the data useful in understanding temporally-resolved concentrations of
+various air pollution species in residential settings? The DQI will follow that provided in
+Guidance for Quality Assurance Project Plans QA/G-5 (EPA 2002). In implementing the graded
+approach, each of the following six data quality indicators will be considered as applicable to the
+type of data being assessed.
+1. Precision: Information on indoor species are expected to have been obtained from direct
+measurement.
+2. Bias: The potentially biased information can be appropriately used in ascertaining bounding
+analyses and may be useful to identify limits to possible parameter values. If this is the case,
+the rationale as to where the bias may lie and why it is being used is provided.
+3. Representativeness: Data on indoor and outdoor air pollution species in residential settings
+will be utilized. Representativeness is a qualitative term that expresses the degree to which
+information/data being considered accurately represents the population and/or parameter we
+are trying to address
+4. Completeness: The review team will look for indications that information sources are well
+documented and that the study has been independently reviewed and approved.
+5. Comparability: Comparability is a qualitative term that expresses the measure of confidence
+that the information/data from different reports on the same or similar subjects/concepts can
+be compared and combined for evaluation and development of decision(s) related to the
+project tasks at hand.
+6. Sensitivity: The sensitivity of project results to specific data will be an important
+consideration in the use of those data in the study. The precision and accuracy of data will be
+carefully evaluated in a graded QA approach and uncertainty bounds may be established in
+the analysis for sensitive data of questionable accuracy.
+B. MODEL DEVELOPMENT
+B1. Model Description
+This project consists of model development tasks such as model architecture design, coding,
+testing, documenting, deployment, version control, and issue tracking. The project will use
+secondary (non-direct) data from many sources and may generate large volumes of modeled data
+during implementation. No sampling or collection of primary data will occur.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 14 of 29
+The SIACS model is a deterministic, dynamic model of gas and particle concentrations in indoor
+air. It assumes an idealized building consists of a single, well-mixed zone. The five processes
+included in the model are: 1) infiltration from the outdoors, 2) exfiltration to the outdoors, 3)
+indoor photochemical reactions, 4) indoor emissions, and 5) irreversible indoor deposition on
+surfaces. Figure 4 displays the input variables needed in the SIACS model to develop the timeresolved concentrations of indoor air species.
+Figure 4. Five Components of the SIACS Model
+B2. Model Parameters & Theoretical Approach
+Indoor concentrations of species are modeled by the mass conservation equation (Koutrakis et al.
+1992):
+(eq. 1)
+where:
+Ci,x indoor concentration of species x
+Co,x outdoor concentration of species x
+P penetration factor (across building envelope)
+a air exchange rate (between indoor and ambient air)
+kn pseudo-first order reaction rate constant between species indoors
+Sx emission rate of species x from indoor sources
+vx indoor deposition velocity for species x
+SIACS
+Model
+Ambient Air
+Concentrations
+Meteorological
+Data
+Indoor Source
+Strengths
+Time-Resolved
+Concentrations of Indoor Air
+Species
+Indoor Light Intensity or
+Wavelength
+Distribution
+Approximate building
+characteristicsDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 15 of 29
+A indoor surface area
+V indoor volume
+The infiltration contribution to the air exchange rate is calculated using the extended Lawrence
+Berkeley National Laboratory parameterization (Breen et al 2010; Breen et al. 2014; ASHRAE
+2017), based on temperature differential and wind speed to calculate infiltration and natural
+ventilation, as well as any mechanical ventilation rates (assumed as known inputs). The total
+ventilation rate is calculated as
+𝑄𝑡𝑜𝑡 = 𝑄𝑏𝑎𝑙 + √𝑄𝑢𝑛𝑏𝑎𝑙 2 + 𝑄𝑛𝑎𝑡 2 + 𝑄𝑖𝑛𝑓 2 (eq. 2)
+𝑄𝑖𝑛𝑓 = 𝐴𝑖𝑛𝑓√𝑘𝑠|𝑇𝑖 − 𝑇𝑜| + 𝑘𝑤𝑈2 (eq. 3)
+𝑄𝑛𝑎𝑡 = √𝑄𝑛𝑎𝑡 2 ,𝑤𝑖𝑛𝑑 + 𝑄𝑛𝑎𝑡 2 ,𝑠𝑡𝑎𝑐𝑘 (eq. 4)
+where:
+Qtot total ventilation rate
+Qbal balanced mechanical ventilation rate
+Qunbal unbalanced mechanical ventilation rate
+Qnat natural ventilation rate (through windows and doors)
+Qinf infiltration (leakage) rate (through cracks in the building envelope)
+Ainf Area across the building envelop
+Ks Stack Coefficient
+Ti Temperature indoors
+To Temperature outdoors
+Kw Wind Coefficient
+U Wind Speed
+Qnat,wind airflow from wind effect
+Qnat,stack airflow from stack effect
+The photochemical reaction model is based on the condensed SAPRC-99 mechanism, originally
+designed for volatile organic compound (VOC) reactivity assessment in regional models (Carter,
+2000). The original mechanism was developed to assist in identifying the secondary pollutant
+formation potential of different VOCs, and this focus on secondary reaction byproducts remains
+important for health applications indoors. Additional model development will address the
+significance of changing the modeling environment and the assumptions implemented when
+applying the mechanism indoors in order to adapt the chemical mechanism accordingly.
+An additional component will be developed to allow for the modeling of indoor ultrafine
+particles (UFP), particulate matter with diameters that are ≤ 2.5 µm (PM2.5) and particulate
+matter with diameters that are ≤ 10 µm (PM10) based on ambient and indoor sources and settling
+on surfaces. The component will allow the model to account for sources or reactions happeningDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 16 of 29
+outside of the particles phase –including SOA formation and surface chemistry. The current
+version of the model assumes all reactions take place in the gas phase and no heterogeneous
+interactions, including surface absorption and desorption, are represented in SIACS. Lastly, a
+component for modeling the interaction of light will be developed to improve the model’s ability
+to account for interactions between light and various species.
+B3. Non-direct Measurements (Input Data Requirements)
+The project will use secondary (non-direct) data from many sources and may generate
+large volumes of modeled data during implementation. Most parameters (Tables 5 and 6) consist
+of default values provided by IED, while others are provided as inputs from users who will
+access the model code or web application. Explanation of default values will be provided to users
+in the SIACS User Guide. Other data sources, utilized by the end user and not provided by EPA,
+will be subject to the quality guidelines of the end user and their project objectives. It is
+anticipated that all secondary data will be acquired in electronic format. Acquisition of data will
+be documented in electronic repositories. Metadata concerning each of the model’s inputs and
+outputs will be stored on the project SharePoint and will also be made available with the final
+public release of the model. Units are based upon the specification of the individual model
+components.
+Within the limitations of the model, users can modify most variables represented in equation 1.
+Some input variables must be assigned a fixed value for the entire modeled time period, others
+can be modeled as dynamically changing over time. Dynamic variables represent evolving
+characteristics of the indoor and ambient atmospheres. The fixed variables are conceptualized as
+representing relatively unchanging characteristics of the indoor space (building) being modeled.
+The variables governing the photochemical mechanism are thought as fixed (and optimized for
+the application) and cannot be changed without modifying the code for the R scripts. The
+following tables present the variables that can currently be changed without changing the R
+script for the model.
+SIACS runs for a specified length of simulated time (in minutes) and will generate results with a
+specified resolution. The solver in the model, however, calculates time steps as needed for
+solution convergence, irrespective of this resolution.
+A key feature of SIACS is the ability to work with limited data. All time-dependent input
+variables can take a specified value as frequently or as sparsely as available data allows, but as a
+minimum must be defined at the start and end times of the simulation. SIACS interpolates the
+available data for every time dependent variable as needed, using the monotonic Fritsch and
+Carlson spline method. Since this method does not guarantee positive values, a modification has
+been developed to ensure non-negativity and continuous first-order derivatives..
+The initial indoor concentrations can be provided based on known data, or calculated to match
+equilibrium conditions at the start of the simulations. In the latter case, it is recommended that
+users allow the model to run under constant conditions matching the desired initial state. This
+model spin-up time varies based on the conditions modeled, but it is longer with lower airexchange rates.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 17 of 29
+Table 5. Input Variables with Time-Dependent Values
+Condition Variables Units
+Ambient To , Outdoor temperature K
+Wind speed m/s
+Co,i Outdoor concentrations of species ppmv; µg/m3
+(for particles)
+Barometric pressure Pa
+Indoor Ti Indoor temperature K
+SunFactor (indoor fraction of zenith sun-light (summer
+conditions and directly overhead) integrated photon flux,
+300-760 nm),
+[0,1]
+Sx
+, Emission rate of species g/min
+Ventilation rate (over and above the infiltration rate) m3/hr
+Relative humidity [0,1]
+Table 6. Descriptions of Input Variables Related to Building Characteristics
+Variable Description Units
+Floor surface Floor surface area of space modeled m2
+Room height m
+Area to volume ratio m-1
+Infiltration surface area Effective leakage area for infiltration m2
+Pi Gas Penetration factor (for species i) Unit-less
+kw
+Stack coefficient (Breen, 2010) (L/s)2/(cm4K)
+Ks Wind coefficient (Breen, 2010) (L/s)2/(cm4(m/s)2)
+Vi Deposition velocity for species i m/min
+An aim of this project will be to collect input parameters from the literature and directly from
+stakeholders and partners, and to store these data in a database. Any collected literature will be
+evaluated according to Quality Assessment Factors described in Section A.7.2. We will construct
+this database in Excel and may eventually transition the database to a more user-friendly
+software. The Excel database will provide detail on the parameter name, value and citation.
+B4. Model Coding and Verification
+1. Code development. During the code development records of all the assumptions, parameter
+values and their sources, model inputs and outputs and their formatting requirements will be
+documented. Once the code development is complete, we will prepare a code documentation
+that will include model specifications, model description, flow charts, description of routines,
+source listing, and error messages.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 18 of 29
+The image below displays the location where the previous versions, current version and
+versions under development of the modeling code will be stored on the project share drive
+(F:). As mentioned in Section A6, all official records will also be saved on EZ Records. All
+new versions will be released with updated documentation, which will summarize the model
+changes made to the new version. The previous version and documentation will be preserved
+and stored in a specified project folder named “Previous versions.” The new version will be
+stored in the same project folder and named “SIACS” followed by its release date, month
+<MM> and year <YY>. For example, the current version is named “SIACS 0421” because it
+was released (internally to the development team) in April 2021. This process is repeated as
+new versions become available. The Principal Investigator (PI) is the gatekeeper of the
+current model code and any modifications and additions to the code need to be verified and
+approved by that individual. Model code that is under development is stored in the folder
+“Versions under development.” With regards to version control, all changes in the code are
+highlighted using the comment (#) symbol and tracking of modifications is done manually
+(generally in a word document) by the code developer. Once the model is publicly available,
+the code may be moved to the EPA GitHub where subsequent version control and tracking
+automatically may be accomplished.
+2. Computer requirements for hardware and software. The selected programming language
+for this project is R programming language. The source code will be made available to the
+public at the end. The code will be compiled with R Studio and the resulting model will be
+run on any PC or Macintosh computer using the R or R Studio software.
+3. Code verification. The code will be documented with statements describing the purpose and
+details of a code/programming line or group of programming lines, including functions and
+subroutines. To verify the developed code, each new function, subroutine or calculation
+performed by the code will be compared to results of test-case calculations performed outside
+SIACS. These, in turn, will be reviewed by at least one more person in the team before the
+comparison with code results is performed. In case of a mismatch, the code will be inspected
+line by line for potential mathematical errors and/or bugs. If the code is not functioning in a
+test trial, a R Studio debugger will be launched to identify potential errors and attempts will
+be made to diagnose the source and correct the error.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 19 of 29
+B5. Sensitivity and Uncertainty Analysis
+In the context of this modeling effort, sensitivity analysis is intended to evaluate the degree each
+input uncertainty contributes to the uncertainty of the model output. It is expected that
+relationships between many variables will be highly non-linear, and consequently the sensitivity
+to changes in inputs needs to be assessed at multiple possible values of each variable. The sheer
+number of variables in SIACS precludes a full sensitivity analysis where the impact of each
+variable is assessed individually.
+Modeling uncertainty results from approximating the physical environment with a mathematical
+model. Although the assumptions involved in mass balance, in the photochemical mechanism,
+the infiltration model, and other components have been separately evaluated and found to be
+adequate for most of their intended purposes, their combination in a single model has not yet
+been evaluated against empirical data. Such comparisons, when available, will be included in this
+user guide to guide users in choosing appropriate applications of SIACS.
+Measurement uncertainty results from imperfect knowledge of the true value of measured
+variables. To the extent that uncertainty exists within each of the input variables to SIACS it will
+also exist in the output concentrations as well. The quantification of measurement uncertainty,
+through error propagation or other method, in the model is under development and is planned as
+a feature of the first public version of SIACS. This uncertainty characterization is important in
+setting apart SIACS as a useful tool in making decisions about indoor air quality.
+Monte Carlo simulations will also be performed in this project. Monte Carlo simulation performs
+risk analysis by building models of possible results by substituting a range of values—a
+probability distribution—for any factor that has inherent uncertainty. It then calculates results
+over and over, each time using a different set of random values from the probability functions.
+We will populate input parameter sets by random generation of the input parameters from their
+respective a-priori distributions and run the model with each parameter set. We will rely on
+expert judgment and literature for parameter distributions. If no information is available, uniform
+distribution will be assumed (uninformed priors).
+B6. Model Calibration
+This modeling effort will not require the calibration of analytical instruments for the purposes of
+generating analytical data. However, this effort will require model calibration, or the estimation
+of parameters involved in the formulation of various empirical relationships. During the
+development phase, some model parameters may be calibrated using existing observational data
+from the scientific literature and associated data, all of which are supplied and maintained by
+external sources and groups (such as HOMEChem). Quality assurance documentation associated
+with data obtained from these external sources and groups will be provided and reviewed
+according to DQA and DQI outlined in section A7. Individual researchers on this project are
+responsible for vetting any acquired data sets as to their general quality by scrutinizing such
+aspects as the data uncertainty, completeness, and appropriateness (and other applicable aspectsDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 20 of 29
+as those outlined in section A7) for the modeling task at hand. This quality check will be
+recorded in a table format on the Documentation of Quality Control Form as mentioned in
+section A7.
+Calibration of parameters via model-fit comparison of predicted vs. observational data
+Model simulations will attempt to reproduce the observed data. For a select set of parameters or
+modeling options, optimization will be used to minimize residuals of indoor concentrations.
+Some examples of modeling parameters or options candidates for optimization include
+deposition velocities, mechanism of heterogeneous HONO production, and penetration factors.
+The selection of parameters to calibrate and the associated values implemented into the model
+will be at the discretion of the group team and the Principle Investigator (PI) as well as the
+availability of the parameters in existing studies. As mentioned above, the PI is the gatekeeper of
+the model code, which also includes accompanying parameters.
+Inputs to the model calibration process can highly influence the quality of information generated
+by the model. Therefore, the calibration process may need to be iterative in nature, repeated
+whenever some key aspect of the environment changes. Each iteration would utilize data that
+accurately portray the changing environment and, therefore, would provide further necessary
+refinements to the model.
+For convenience and documentation purposes, a calibration template was created that contains
+entries for the modeling options, parameters and their ranges as well as associated model results
+and residuals. Documentation of calibration activities will be maintained using the Calibration
+Template shown in Appendix A, Table A2. When conducting calibrations, the researcher will
+use the calibration template to ensure inputs and outputs of the model are recorded. Statistical
+methods, such as regression analyses and goodness-of-fit methods will be used when performing
+model calibrations. The details of the model calibration procedure, including any statistical
+analyses that are involved, and technical notes will also be documented on the calibration
+template.
+The model will be calibrated by comparing the predictions (output) for a given set of assumed
+conditions to observed data for the same conditions. This comparison will allow the modeler to
+evaluate whether the model and its parameter reasonably represent the environment of interest
+(i.e., indoor environment). The acceptance criteria will depend on the Relative Root Mean
+Square Error (RMSE) where a value of zero indicate a perfect fit of the modelling results to the
+observed data. Lower values, generally, indicate a better model fit than higher values. The
+acceptance criteria for the use of a specific parameter is 1) there are no other options found in the
+literature or 2) when compared to other values obtained from literature, the RMSE associated
+with this specific parameter is lower than the other RMSEs.
+The calculation for the RMSE is shown on the calibration template, and a selected set of species
+will be used as inputs (instead of having all 78 species used as inputs). For this smaller set,Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 21 of 29
+species will be selected based on how impactful they are to indoor chemistry and how significant
+they are to human health. The selected set of species will be documented once all of them are
+identified.
+B7. Model Verification (Model Comparison)
+The model will be verified concurrently using existing analytical tools for indoor chemistry
+simulation from the peer reviewed literature. Specifically, we will compare simulated
+concentrations of key species (NO, NO2, HONO, O3, HCHO and OH) using SIACS to
+previously published values in the literature. For example, we will compare SIACS output with
+values from the Indoor Chemistry and Exposure Model (ICEM) by Sarwar et al. (2002), the
+detailed chemical model by Carslaw (2007) and the INCA-indoor model by Mendez and
+coworkers (2015), and the mathematical model by Nazaroff and Cass (1986). Analyses will
+focus on perturbing the base case scenario to assess SIACS performance in modeling changes in
+concentrations, and these results will be compared to the previously published models. Process
+of performing these model comparisons and their results will be summarized in a white paper(s),
+conference papers and/or published manuscript(s) in peer-reviewed journals.
+B8. Model Evaluation & Validation
+The SIACS model, SIACS User Guide, and other associated products will be evaluated in three
+phases: (1) Simultaneous review by EPA reviewers and non-EPA Federal partners with expertise
+on indoor air chemistry; (2) review of SIACS model and User Guide by a small group of external
+modelers with indoor air chemistry and modeling expertise; (3) review of the model and key
+scientific results and findings by a scientific journal.
+These three stages of evaluation will be conducted to evaluate, adjust, and refine the model based
+on performance (Figure 4). These three phases of testing will include testing all aspects of the
+SIACS model, including quality assurance testing for functionality, Section 508 compliance,
+spelling and grammatical errors, and other technical specifications.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 22 of 29
+Figure 4. Model Evaluation Process
+B8.1 Model Evaluation Plan
+• Phase 1. EPA and Federal Subject Matter Expert Review
+In an initial phase (Phase 1), the model will be independently and concurrently reviewed
+by: EPA subject matter experts and external Federal subject matter experts. All subject
+matter experts will be selected based on their expertise in indoor air chemistry,
+atmospheric chemistry, and modeling, and will be requested to review and apply the
+model to their data. A request for external Federal reviewers may potentially include
+scientific expertise from the Consumer Product Safety Commission, Department of
+Energy, National Institute for Occupational Safety and Health, Occupational Safety and
+Health Administration, Lawrence Berkeley National Laboratory, and the National
+Institute of Standards and Technology. In preparation for these concurrent reviews, the
+project team will develop validation criteria for the review (separately of this QAPP).
+Reviewer feedback will be collected, revisions to the model will be implemented, and
+responses will subsequently be provided to reviewers on how their feedback was
+addressed and how associated improvements to the model were made. Once the
+validation criteria (to be developed separately) and performance of the model based on
+this feedback and subsequent revisions is satisfactorily met, a second phase of evaluation
+will be conducted.
+• Phase 2. Model Usability Review
+In the second phase (Phase 2), the model will be disseminated to a small group of
+external and EPA modelers, identified among existing partners from academic and
+government institutions who have expertise in indoor air chemistry, for beta testing of the
+model and GUI, to test its usability and functionality.
+• Phase 3. Scientific Peer Review
+Finally, in the third phase (Phase 3), application of the model and its results will be
+submitted for review by a scientific journal. It is anticipated that in this third stage, the
+results of this study will undergo internal technical review for presentations and will also
+undergo external scientific peer-review before results are published in either an EPA
+report or peer-reviewed journal. Additionally, the manuscripts will also undergo internal
+technical reviews by individuals selected for their expertise related to this field prior to
+publication clearance. These reviews are documented using associated internal routing
+and clearance methods.
+B8.2 Acceptance Criteria and Documentation
+In all evaluation and review processes, specific evaluation and acceptance criteria, reviewerDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 23 of 29
+comments and EPA’s response to comments (which will address steps EPA has taken to address
+reviewer feedback) will be documented. Acceptance criteria (to be prepared separately in
+preparation for the Phase 1 and Phase 2 reviews) will be reviewed and agreed upon by the
+project team as part of the model review process. The following provides an overview of the
+prospective process by which the product will be validated to ensure it meets the acceptance
+criteria.
+1. The model version and associated files are made available in a testing environment.
+2. Tester(s) will test the functionality of the model based on agreed upon requirements (to be
+prepared separately in preparation for the Phase 1 and Phase 2 reviews). For example, testing
+for correctness of functionality can be based on the model generating outputs within ± 1% of
+each other for the same set of input data, when run without stochastic variables (e.g.
+measurement uncertainty).
+3. The technical lead will report as bugs any acceptance criteria that are not met and will assign
+them to a project team member for adjudication (refinement/adjustment of model/files).
+4. The technical lead will prioritize bugs to be fixed ahead of new features.
+5. Developers fix all reported issues.
+More information on model testing and validation can be found in Section D1. Model testing
+strategy. Records will be managed according to processes outlined in A6. Documents and
+Records for more information.
+B9. Data Management
+All project files (statements of work, QAPPs, data files, etc.) are stored on a private EPA
+SharePoint drive, in a folder labeled “SIACS”. Files are backed up on a regular basis (weekly &
+monthly). Access is restricted to those on the project team. The SIACS model, related files, and
+previous versions will be maintained on the project share drive (F:). As mentioned in Section A6,
+all official records will also be saved on EZ Records.
+This project will acquire data from secondary sources, manipulate secondary data to meet
+user requirements, generate data from model output, and create summary and processed
+files for further statistical and analytical treatment. It is anticipated that the project will
+acquire or generate little or no hardcopy data. The project will maintain a data
+management system that protects integrity of the data received and generated throughout
+the project. This includes file management systems, version control, archiving
+procedures, and quality assurance activities. See A6. Documents and Records for more
+information.
+C. ASSESSMENTS AND OVERSIGHT
+C1. Assessments and Response ActionsDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 24 of 29
+QA Audits/Reviews. The ORIA QAM, IED QAC, as well as other designated QA personnel for
+this project may choose to conduct a Technical Systems Audit (TSA) during execution of the
+research project to ensure this QAPP is being implemented as intended. Alternatively, QA staff,
+or a designee, may perform an audit of data quality on either all or a portion of the generated data
+if requested by the primary client (IED/ORIA Management). QA evaluations may include
+interviews with development team members, and a review of research project work and quality
+records. Any findings, research best practices, or improvements will be compiled in a report and
+filed with other QA documents. Any corrective actions and responses will be
+documented and filed with the Assessment Report and stored by the project lead.
+The project team leader will have responsibility for monitoring project activities and
+identifying or confirming any quality problems. Any problems will be brought to the
+attention of the IED Management Team, IED QAC, and the ORIA QA Manager, who will
+initiate corrective actions, document the nature of the problem, and ensure that the recommended
+corrective action is carried out.
+Additionally, any associated scientific and technical products cleared through ORIA/IED will
+also undergo a quality assurance review prior to clearance to ensure that the developed product
+was within the scope of the appropriate QAPP.
+C2. Reports to Management
+Weekly meetings with the project and task lead, as well as other team members, will be held to
+verbally report on the status of the project, results of performance evaluations and systems
+assessments, results of data quality and modeling evaluations, and any significant quality
+assurance problems and recommended solutions. Documentation of research progress is kept in
+SharePoint project notes.
+Periodic updates/progress reports will be given to management as needed to discuss the progress
+of the project. Recommended management actions will be taken as appropriate to adjust the
+research. Any identified errors, deficiencies, and anomalies will be documented and reported to
+the team. If needed, an error analysis will be performed, and the model processes will be
+reviewed and/or modified. Any identified deviations from the approved QAPP will be
+documented and reported to the task lead, management, QAC and QAM. Electronic quality
+control information, technical assessments, and documentation will be made available to
+interested parties.
+D. MODEL VALIDATION AND USABILITY
+D1. Model testing strategyDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 25 of 29
+The model testing strategy will be developed separately of this QAPP and in preparation for the
+Phase 1 and Phase 2 of the model evaluation, to ensure the final model meets the design
+objectives (see section B8. Model Evaluation & Validation). As such, the testing protocols will
+focus on whether or not the model:
+• Provides reproduceable and sound model output
+• Is user friendly
+• Does not fail in unpredictable manners when improper data are input
+• Satisfies specified requirements as outlined in this QAPP
+To meet these objectives, we will apply a mixed approach for quality assurance, consisting of the
+following components:
+• Make beta versions of the program available to interested parties to evaluate the model’s
+ease of use and documentation. This early implementation of model versions with
+customers will create early feedback.
+• This feedback will be considered for a revision of the model if necessary and it will be
+important for the continued work.
+• Consultation with programming subject matter experts.
+• Implementation of consultation feedback for optimization of model performance.
+D2. Procedure for checking the correctness of outputs
+With respect to coding development, model outputs will be assumed to be without error except
+for known bugs in R programming software previously documented internally or posted online.
+SIACS model outputs will be verified through running and checking results associated with the
+modified code. See section B4. Model Coding and Verification for more information.
+Model verification and the checking and vetting of model output will be conducted according to
+the processes outlined in sections B6. Model Calibration and B7. Model Verification (Model
+Comparison).
+D3. Quality assurance of code development.
+Model code are checked by members of the model development staff. Checks include
+performing testing of individual scripts and the integrated model. Quality objectives and criteria
+of the developed code include accuracy, in-line documentation, code readability, adherence to
+coding standards, model scripts, archival and version control. A model bug-reporting system is in
+place through the R system to report bugs or code errors to be investigated. The development
+team will explicitly declare all variables used, utilize R language constructs and conventions, and
+include comment lines explaining algorithms and descriptive variable names with units listed in
+the code or in supporting documentation. The SIACS User guide will provide additional
+supporting information to assist the user with understanding the model code, input and output
+variables, and overall construct.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 26 of 29
+D4. Conformance to requirements
+Conformance to requirements will be evaluated to determine whether the model can meet the
+prescribed functional requirements. Limitations of the model will be noted within the model
+itself and as part of the user instructions.
+E. REFERENCES
+ASHRAE, 2017. Handbook-Fundamentals, Atlanta: American Society of Heating, Refrigerating,
+and Air-Conditioning Engineers, Inc.
+Breen, Michael S., Bradley D. Schultz, Michael D. Sohn, Thomas Long, John Langstaff, Ronald
+Williams, Kristin Isaacs, Qing Yu Meng, Casson Stallings, and Luther Smith. "A review of air
+exchange rate models for air pollution exposure assessments." Journal of Exposure Science
+and Environmental Epidemiology 24, no. 6 (2014): 555
+Breen, Michael S., Miyuki Breen, Ronald W. Williams, and Bradley D. Schultz. "Predicting
+residential air exchange rates from questionnaires and meteorology: model evaluation in
+central North Carolina." Environmental science & technology 44, no. 24 (2010): 9349-9356.
+Carslaw N. 2007. A new detailed chemical model for indoor air pollution. Atmospheric
+Environment. 41, 1164–1179.
+Carter, W. P. 2000. Documentation of the SAPRC-99 chemical mechanism for VOC reactivity
+assessment. Contract, 92(329), 95-308.
+Koutrakis P, Briggs SLK, Leaderer BP . Source apportionment of indoor aerosols in Suffolk and
+Onondaga counties, New York. Environ Sci Technol 1992; 26: 521–527
+Mendez M, Blond N, Blondeau P, Schoemaecker C, Hauglustaine DA. Assessment of the impact
+of oxidation processes on indoor air pollution using the new time-resolved INCA-Indoor model
+Nazaroff WW and Cass GR. 1986. Mathematical Modeling of Chemically Reactive Pollutants in
+Indoor Air. Environmental Science and Technology. 20:9, 924-934.
+U.S. Environmental Protection Agency. 1989. Report to Congress on indoor air quality: Volume
+2. EPA/400/1-89/001C. Washington, DC.
+U.S. Environmental Protection Agency 2002a. Guidelines for Ensuring and Maximizing the
+Quality, Objectivity, Utility, and Integrity of Information Disseminated by the Environmental
+Protection Agency. EPA/260R-02-008 (October 2002 with Addenda in 2004 and 2005).U.S.
+Environmental Protection Agency.
+U.S. Environmental Protection Agency 2002b. Guidance for Quality Assurance Project Plans for
+Modeling EPA QA/G-5MDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 27 of 29
+U.S. Environmental Protection Agency 2003. A Summary of General Assessment Factors for
+Evaluating the Quality of Scientific and Technical Information (EPA 100/B-03/001) June 2003
+and addendum, U.S. Environmental Protection Agency.
+F. LIST OF SECTIONS NOT APPLICABLE TO THIS QAPP
+Sections B.1-B.6 and B.8 of the [QAPP GUIDANCE (i.e., Sampling, Measurement, etc.] are not
+applicable to the scope of this project or QAPP.
+• B1. Sampling Process Design
+• B2. Sampling Methods
+• B3. Sample Handling and Custody
+• B4. Analytical Methods
+• B5. Quality Control
+• B6. Instrument/Equipment Testing, Inspection, and Maintenance
+• B8. Inspection/Acceptance for Supplies and ConsumablesDevelopment of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 28 of 29
+Appendix A
+QC Documentation Table
+Table A1. Data Quality Assessment Factors (DQAs) and Data Quality Indicators (DQIs) review of existing information/data
+Data Source
+Citation
+Data Quality Assessment Factors Data Quality Indicators Explanations
+Comparability
+Evaluation and
+Review
+Uncertainty and
+Variability
+Clarity and
+Completeness
+Soundness
+Applicability and
+Utility
+Sensitivity
+Comparability
+Completeness
+Representativeness
+Bias
+Precision
+No. Information
+data source
+citation
+X X X X X X X X X X X X
+1.
+Grade X as provided below:
+A = Acceptable and used in the evaluation;
+M = Marginal and used for corroborating purposes;
+U = Unacceptable and not used in the evaluation; and
+N = Not Applicable.Development of EPA’s Simplified Indoor Air Chemistry Simulator (SIACS) Model
+EPA/OAR/ORIA/IED Page 29 of 29
+Calibration Template
+Table A2. Calibration template
+What is the source of the
+parameter being evaluated?
+What is the source
+of the observation
+data?
+What parameters
+are being
+evaluated?
+Where are the
+simulation conditions?
+What are the inputs?
+What
+outputs
+are of
+interest?
+Relative root
+mean square
+error (RMSE) Notes
+𝑅𝑒𝑙𝑎𝑡𝑖𝑣𝑒 𝐷𝑖𝑓𝑓𝑒𝑟𝑒𝑛𝑐𝑒 = 100 ×
+𝑆𝐼𝐴𝐶𝑆
+𝑎𝑣𝑔 − 𝑜𝑏𝑠𝑒𝑟𝑣𝑎𝑡𝑖𝑜𝑛𝑎𝑣𝑔
+𝑜𝑏𝑠𝑒𝑟𝑣𝑎𝑡𝑖𝑜𝑛
+𝑎𝑣𝑔
+The relative difference is per-species, and it is the average over the time period.
+𝑅𝑒𝑙𝑎𝑡𝑖𝑣𝑒 𝑅𝑀𝑆𝐸 = √∑(𝑅𝑒𝑙𝑎𝑡𝑖𝑣𝑒 𝐷𝑖𝑓𝑓𝑒𝑟𝑒𝑛𝑐𝑒)2
